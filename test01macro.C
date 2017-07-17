@@ -1,5 +1,5 @@
 #include "TFile.h"
-#include <algorithm> // for std::max
+//#include <algorithm> // for std::max
 #include <iomanip>
 #include "THStack.h"
 #include "TCut.h"
@@ -13,13 +13,30 @@
 #include <TROOT.h>
 #include <TStyle.h>
 #include "TLegend.h"
-#include <iostream>
-#include <fstream>
-#include <string>
+//#include <iostream>
+//#include <fstream>
+//#include <string>
 
 #include <ctime>
 #include <stdlib.h>
 #include "StandardRecord/StandardRecord.h"
+
+
+#include "TApplication.h"
+#include "TSystem.h"
+#include "TRint.h"
+#include "Cintex/Cintex.h"
+
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+
+
 //#include "StandardRecord.h"
 
 //gSystem->Load("libCintex.so");
@@ -33,10 +50,21 @@ void test01macro(){
 //file->ls();
         TTree* tree=(TTree*) file->Get("recTree");
 //tree->Scan();
+        TCanvas* c1=new TCanvas("c1","X-Vertex position",1024,768);
+        //TCanvas* c2=new TCanvas("c2","Y-Vertex position",1024,768);
+
+
+        TH1F* h0=new TH1F("h0","X-Vertex Position",50,-140,140);
+        TH1F* h1=new TH1F("h1","Y-Vertex Position",50,-140,140);
+        TH1F* h2=new TH1F("h2","Z-Vertex Position",100,50,1200);
+        TH1F* h3=new TH1F("h3","slc.nhit",50,20,250);
+        TH1F* h4=new TH1F("h4","slc.calE",50,0,3.5);
+        TH1F* h5=new TH1F("h5","trk.kalman.len",100,-20,420);
+
 
         caf::StandardRecord* rec;
         tree->SetBranchAddress("rec", &rec);
-        tree->SetBranchStatus("slc.nhit", 1);
+        //tree->SetBranchStatus("slc.nhit", 1);
 
 
         for(int i = 0; i< tree->GetEntries(); ++i)
@@ -55,7 +83,33 @@ void test01macro(){
                    abs(rec->vtx.elastic[0].vtx.fY)<140&&
                    rec->vtx.elastic[0].vtx.fZ<1200&&
                    rec->vtx.elastic[0].vtx.fZ>50
-                   ) {std::cout << rec->vtx.elastic[0].vtx.fX << std::endl;}
+                   ) {
+
+
+                        //std::cout << rec->vtx.elastic[0].vtx.fX << std::endl;
+
+                        h0->Fill(rec->vtx.elastic[0].vtx.fX);
+                        h1->Fill(rec->vtx.elastic[0].vtx.fY);
+                        h2->Fill(rec->vtx.elastic[0].vtx.fZ);
+                        h3->Fill(rec->slc.nhit);
+                        h4->Fill(rec->slc.calE);
+
+                        //std::cout<<rec->trk.nkalman<<std::endl;
+                        for(Int_t k=0; k<rec->trk.nkalman; ++k) {
+
+                                h5->Fill(rec->trk.kalman[k+1].len);
+                        }
+//std::cout<<rec->trk.kalman[1].len<<std::endl;
+
+                }
+
+
+                //gStyle->SetOptStat(kTRUE);
+                c1->cd();
+                h5->Draw();
+                //  TCanvas* c2=new TCanvas("c2","Y-Vertex position",1024,768);
+                //c2->cd();
+                //h1->Draw();
 
                 //
                 //         //
